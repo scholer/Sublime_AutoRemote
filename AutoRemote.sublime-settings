@@ -1,0 +1,7 @@
+// AutoRemote default settings.
+{
+    "autoremote_baseurl": "https://autoremotejoaomgcd.appspot.com/",
+    "autoremote_key": null,
+    "autoremote_default_sender": null,
+    "devices": {}
+}
