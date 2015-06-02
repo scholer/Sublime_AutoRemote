@@ -1,8 +1,10 @@
 // Default AutoRemote commands.
 // You can create your own custom commands by copying this file and putting it in your
 // User directory (next to your "Settings - User" settings file).
+// Note, though, that this file will override the default sublime-settings file!
 [
     { "caption": "AutoRemote: Send Message", "command": "autoremote_send_message" },
     { "caption": "AutoRemote: Set Key from Url", "command": "autoremote_set_key_from_url" },
-    { "caption": "AutoRemote: Send test message", "command": "autoremote_send_message", "args": {"message": "Hello world!"} }
+    { "caption": "AutoRemote: Send test message", "command": "autoremote_send_message", "args": {"message": "Hello world!"} },
+    { "caption": "AutoRemote: Show messages panel", "command": "autoremote_messages_panel" }
 ]

@@ -117,6 +117,84 @@ class AutoremoteSendIntent(sublime_plugin.WindowCommand):
 
 
 
+class AutoremoteMessagesPanelCommand(sublime_plugin.WindowCommand):
+    """
+    Command string: autoremote_messages_panel
+    Displays a panel with user-defined messages (user settings - "autoremote_messages" key).
+    The selected message is sent via AutoRemote.
+    Messages are defined as a list under the "autoremote_messages" key in the settings file.
+    Each message element in the list can be specified in two ways:
+    1. Simple: The element is just a string with the message to send to AutoRemote, e.g.
+        "update dropbox"
+    2. Advanced: The element is a dict with the following keys:
+        {"caption": "Say Hello World", "message": "say=:=Hello world!"}
+
+    The dict-based input will make an entry titled "Say Hello World",
+    which will send the message "say=:=Hello world!".
+    This message conforms to the standard AutoRemote message format, in the form
+        %arpar1 [%arpar2, ...]=:=%arcomm
+    This is just a standardized way to provide messages with different content/parameters,
+    and have AutoRemote parse the message and make the corresponding variables available.
+    You don't have to use this format: You can choose just to listen for messages
+    and parse the messages using your own regex.
+    If you need the full message in your tasks, it is available as the variable %armessage.
+
+    Using the dict-based approach you can also send messages with other AutoRemote parameters
+    such as target, sender, password, ttl and collapseKey. (See autoremote_utils.py for into):
+        {"caption": "Say Hello World", "message": "say=:=Hello world!", "password": "open sesame", "target": "bigphone"}
+
+    Finally, you can also use the dict-based approach to send notifications or intents,
+    just use the "type" key as such:
+        {"type": "notification", "caption": "Notify world on", "message": "World is on!",
+        "subtext": "If you really want", "ledon": 500, "ledoff": 100,
+        "password": "open sesame", "target": "bigphone"}
+
+    You can refer to the web interface for specifics on the parametes,
+        http://autoremotejoaomgcd.appspot.com/AutoRemoteServer.html
+        http://autoremotejoaomgcd.appspot.com/AutoRemoteNotification.html
+    and of course the docs:
+        http://joaoapps.com/autoremote/what-it-is/
+        http://joaoapps.com/autoremote/walkthrough/
+    """
+
+    def run(self):
+        self.messages = get_setting('autoremote_messages', [])
+        if not self.messages:
+            return
+        try:
+            panel_list = ['\t%s' % (elem if isinstance(elem, str) else elem.get('caption', elem['message']))
+                          for elem in self.messages]
+        except KeyError as e:
+            msg = "KeyError while creating autoremote_messages panel_list: %s " % e \
+                  + "(make sure all dict elements have either a caption or a message key)"
+            print(msg)
+            sublime.status_message(msg)
+        else:
+            self.window.show_quick_panel(panel_list, self.on_done)
+
+    def on_done(self, index):
+        if index < 0:
+            # escape from quick panel return -1
+            return
+        selected = self.messages[index]
+        # I support simple string entries for simplicity:
+        if isinstance(selected, str):
+            selected = {"message": selected}
+        # Remove type and 'caption' items, if present:
+        send_type = selected.pop("type", "message").lower()
+        caption = selected.pop("caption", None)
+        print("AutoRemote Panel selection: send_type=%s, selected=%s" % (send_type, selected))
+        if send_type == "message":
+            send_message(**selected)
+        elif send_type == "notification":
+            send_notification(**selected)
+        elif send_type == "intent":
+            send_intent(**selected)
+        else:
+            msg = "send_type '%s' not recognized :-/" % send_type
+            print(msg)
+            sublime.status_message(msg)
+
 
 class AutoremoteCmdsPanelCommand(sublime_plugin.WindowCommand):
     """

@@ -37,10 +37,13 @@ SETTINGS_NAME = "AutoRemote.sublime-settings"
 def get_settings():
     return sublime.load_settings(SETTINGS_NAME)
 
-def get_setting(key, setting=None):
+def get_setting(key, setting=None, settings=None):
+    """
+    Specify the settings will basically just do settings.get(key)
+    """
     if settings is None:
         settings = sublime.load_settings(SETTINGS_NAME)
-    return settings[key]
+    return settings.get(key)
 
 def persist_setting(key, value):
     settings = sublime.load_settings(SETTINGS_NAME)

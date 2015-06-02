@@ -91,7 +91,7 @@ collapseKey # Message group (optional)
 import os
 import sys
 from urllib.parse import urljoin, urlparse, parse_qs # parse_qsl returns a list of tuples.
-# OH MY FUCKING GOD, requests IS NOT AVAILABLE IN DEFAUTL SUBLIME ??
+# OH MY FUCKING GOD, requests IS NOT AVAILABLE IN DEFAULT SUBLIME ??
 try:
     import requests
 except ImportError:
@@ -116,12 +116,22 @@ def get_endpoint_url(endpoint, baseurl=None):
     return url
 
 def get_params(target=None, sender=None, password=None, device=None,
-               ttl=None, collapseKey=None, key=None, existingparams=None):
+               ttl=None, collapseKey=None, key=None, existingparams=None, **kwargs):
+    """
+    Returns a params dict with the given parameters merged with the default
+    parameters in the user's settings file.
+    """
     settings = get_settings()
+    if device is None:
+        device = settings.get("autoremote_default_device")
     if target is None:
-        target = settings.get("autoremote_devices", {}).get(device, {}).get("target")
+        # Try to see if there is a device with "target", fall back to autoremote_default_target
+        target = settings.get("autoremote_devices", {}).get(device, {})\
+                         .get("target", settings.get("autoremote_default_target"))
     if password is None:
-        password = settings.get("autoremote_devices", {}).get(device, {}).get("password")
+        # Try to see if there is a device with "password", fall back to autoremote_default_password
+        password = settings.get("autoremote_devices", {}).get(device, {})\
+                           .get("password", settings.get("autoremote_default_password"))
     if sender is None:
         sender = settings.get("autoremote_default_sender")
     if ttl is None:
@@ -134,35 +144,37 @@ def get_params(target=None, sender=None, password=None, device=None,
               if loca[v] is not None}
     if existingparams is not None:
         params.update(existingparams)
+    if kwargs:
+        params.update(kwargs)
     return params
 
 def send_message(message, target=None, sender=None, password=None, device=None,
                  ttl=None, collapseKey=None,
-                 key=None, baseurl=None):
+                 key=None, baseurl=None, **kwargs):
     s = requests.Session()
     endpoint = get_endpoint_url("sendmessage", baseurl)
     params = get_params(target=target, sender=sender, password=password, device=device,
-                        ttl=ttl, collapseKey=collapseKey, key=key)
+                        ttl=ttl, collapseKey=collapseKey, key=key, **kwargs)
     params["message"] = message
     r = s.get(endpoint, params=params)
     return r
 
-def send_intent(intent, device=None, key=None, baseurl=None):
+def send_intent(intent, device=None, key=None, baseurl=None, **kwargs):
     endpoint = get_endpoint_url("sendintent", baseurl)
-    params = get_params(key=key)
+    params = get_params(key=key, **kwargs)
     params["intent"] = intent
     r = requests.get(endpoint, params=params)
     return r
 
-def send_notification(message, params, key=None, baseurl=None):
+def send_notification(key=None, baseurl=None, **kwargs):
     """
     params can include any of text, sound, vibration, url, id, and many more...
     """
     endpoint = get_endpoint_url("sendnotification", baseurl)
-    params = get_params(key=key)
-    if message is not None:
-        # message (action) might not be required when sending notifications.
-        params["message"] = message
+    params = get_params(key=key, **kwargs)
+    #if message is not None:
+    #    # message (action) might not be required when sending notifications.
+    #    params["message"] = message
     r = requests.get(endpoint, params=params)
     return r
 

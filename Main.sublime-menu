@@ -32,6 +32,17 @@
                             { "caption": "-" },
                             {
                                 "command": "open_file",
+                                "args": {"file": "${packages}/AutoRemote/AutoRemote.sublime-commands"},
+                                "caption": "Commands – Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/AutoRemote.sublime-commands"},
+                                "caption": "Commands – User"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
                                 "args": {
                                     "file": "${packages}/AutoRemote/Default ($platform).sublime-keymap",
                                 },
