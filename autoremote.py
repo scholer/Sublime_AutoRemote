@@ -15,7 +15,7 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=C0103,W0232,R0903,R0201
+# pylint: disable=C0103,W0201,W0232,R0903,R0201
 
 
 """
@@ -39,6 +39,7 @@ import os
 from urllib.parse import urljoin
 
 ## Sublime imports:
+import sublime_api
 import sublime
 import sublime_plugin
 
